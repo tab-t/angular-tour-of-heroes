@@ -12,8 +12,6 @@ import { memory } from '@angular/core/src/render3/instructions';
 @Injectable()
 export class HeroService {
   private heroesUrl = 'api/heroes';  // URL to web api
-  // for test data
-  HEROES: Hero[];
 
   constructor(
     private http: HttpClient,
@@ -22,13 +20,17 @@ export class HeroService {
   getHeroes(): Observable<Hero[]> {
     return this.http.get<Hero[]>(this.heroesUrl)
       .pipe(
+        tap(heroes => this.log(`fetched heroes`)),
         catchError(this.handleError('getHeroes', []))
       );
   }
 
   getHero(id: number): Observable<Hero> {
-    this.messageService.add(`HeroService: fetached hero id=${id}`);
-    return of(this.HEROES.find(hero => hero.id === id));
+    const url = `${this.heroesUrl}/${id}`;
+    return this.http.get<Hero>(url).pipe(
+      tap(_ => this.log(`fetched hero id=${id}`)),
+      catchError(this.handleError<Hero>(`getHero id=${id}`))
+    );
   }
 
   private log(message: string) {
